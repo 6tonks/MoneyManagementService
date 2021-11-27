@@ -6,8 +6,7 @@ from datetime import datetime
 
 import utils.rest_utils as rest_utils
 
-# from application_services.imdb_artists_resource import IMDBArtistResource
-# from application_services.UsersResource.user_service import UserResource
+from application_services.MoneyManagementService import MoneyManagementResource
 from database_services.RDBService import RDBService as RDBService
 
 logging.basicConfig(level=logging.DEBUG)
@@ -24,7 +23,8 @@ CORS(app)
 # The path is /health and the only method is GETs
 @app.route("/health", methods=["GET"])
 def health_check():
-    rsp_data = {"status": "healthy", "time": str(datetime.now())}
+    now = datetime.now()
+    rsp_data = {"status": "healthy", "time": now.strftime("%Y-%m-%d, %H:%M:%S")}
     rsp_str = json.dumps(rsp_data)
     rsp = Response(rsp_str, status=200, content_type="app/json")
     return rsp
@@ -53,7 +53,7 @@ def demo(parameter1=None):
     # DFF TODO -- We should replace with logging.
     r_json = inputs.to_json()
     msg = {
-        "/demo received the following inputs": r_json #inputs.to_json()
+        "/demo received the following inputs": r_json
     }
     print("/api/demo/<parameter> received/returned:\n", msg)
 
@@ -79,10 +79,22 @@ def user_collection():
     2. HTTP POST with body --> create a user, i.e --> database.
     :return:
     """
-    # res = UserResource.get_by_template(None)
+    # res = MoneyManagementResource.get_by_template(None)
     # rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     # return rsp
-    pass
+    inputs = rest_utils.RESTContext(request)
+
+    # DFF TODO -- We should replace with logging.
+    r_json = inputs.to_json()
+    msg = {
+        "/demo received the following inputs": r_json
+    }
+
+    # if r_json['method']=="GET":
+    wc, lim, offs, flds, links = MoneyManagementResource.get_links(inputs)
+
+    rsp = Response(json.dumps(msg), status=200, content_type="application/json")
+    return rsp
 
 @app.route('/users/<user_id>', methods=['GET', 'PUT', 'DELETE'])
 def specific_user(user_id):
@@ -103,4 +115,4 @@ def get_by_prefix(db_schema, table_name, column_name, prefix):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, )
+    app.run(host="0.0.0.0", port=5001, debug=True)

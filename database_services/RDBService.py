@@ -64,7 +64,7 @@ class RDBService:
         return res
 
     @classmethod
-    def get_where_clause_args(cls, template):
+    def _get_where_clause_args(cls, template):
 
         terms = []
         args = []

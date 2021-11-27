@@ -1,7 +1,7 @@
 from application_services.BaseApplicationResource import BaseRDBApplicationResource
 from database_services.RDBService import RDBService as d_service
 
-class FriendsResource(BaseRDBApplicationResource):
+class MoneyManagementResource(BaseRDBApplicationResource):
 
     def __init__(self):
         super().__init__()

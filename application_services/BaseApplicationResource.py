@@ -75,10 +75,18 @@ class BaseRDBApplicationResource(BaseApplicationResource):
         else:
             self_href = f'{parent_path}limit={lim}'
             next_href = f'{parent_path}limit={lim}&offset={lim}'
+
         links.append({'rel': 'self', 'href': self_href})
         links.append({'rel': 'next', 'href': next_href})
 
-        return wc, lim, offs, links
+        flds = resource_data.fields
+        if flds:
+            for i, link in enumerate(links):
+                links[i]['href'] = f"{link['href']}&fields={flds}"
+            # Do we need to split to list?
+            # flds = flds.split(",")
+
+        return wc, lim, offs, flds, links
 
     @classmethod
     @abstractmethod
