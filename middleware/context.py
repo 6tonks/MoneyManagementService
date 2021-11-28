@@ -1,5 +1,6 @@
-
 import os
+
+from .db_config import db_connect_info
 
 # This is a bad place for this import
 import pymysql
@@ -23,9 +24,9 @@ def get_db_info():
         }
     else:
         db_info = {
-            "host": "localhost",
-            "user": "dbuser",
-            "password": "dbuserdbuser",
+            "host": db_connect_info["DBHOST"],
+            "user": db_connect_info["DBUSER"],
+            "password": db_connect_info["DBPASSWORD"],
             "cursorclass": pymysql.cursors.DictCursor
         }
 

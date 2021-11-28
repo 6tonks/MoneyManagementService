@@ -35,16 +35,35 @@ class BaseRDBApplicationResource(BaseApplicationResource):
         pass
 
     @classmethod
-    def get_by_template(cls, template):
+    def get_by_template(cls, template, limit, offset=None, field_list=None):
         db_name, table_name = cls.get_data_resource_info()
         res = RDBService.find_by_template(db_name, table_name,
-                                          template, None)
+                                          template, limit, offset, field_list)
+        return res
+
+    @classmethod
+    def insert_by_template(cls, template):
+        db_name, table_name = cls.get_data_resource_info()
+        res = RDBService.create_resource(db_name, table_name, template)
+        return res
+    
+    @classmethod
+    def update_by_template(cls, template, where_clause):
+        db_name, table_name = cls.get_data_resource_info()
+        res = RDBService.update_resource(db_name, table_name, template, where_clause)
+        return res
+
+    @classmethod
+    def delete_by_template(cls, template):
+        db_name, table_name = cls.get_data_resource_info()
+        res = RDBService.delete_resource(db_name, table_name, template)
         return res
 
     @classmethod
     @abstractmethod
     def get_links(self, resource_data):
-        # Where clause only supported in get friends
+        
+        # Where clause only supported in GET request
         wc = resource_data.args
 
         # Pagination

@@ -31,7 +31,7 @@ class RDBService:
         return db_connection
 
     @classmethod
-    def run_sql(cls, sql_statement, args, fetch=False):
+    def _run_sql(cls, sql_statement, args, fetch=False):
 
         conn = RDBService._get_db_connection()
 
@@ -84,38 +84,108 @@ class RDBService:
         return clause, args
 
     @classmethod
-    def find_by_template(cls, db_schema, table_name, template, field_list):
+    def find_by_template(cls, db_schema, table_name, template, limit=10, offset=None, field_list=None):
 
-        wc,args = RDBService._get_where_clause_args(template)
+        # Get the where clause
+        wc, args = RDBService._get_where_clause_args(template)
 
-        conn = RDBService._get_db_connection()
-        cur = conn.cursor()
+        # Add field list selector
+        if field_list:
+            sql = f"select {field_list} from {db_schema}.{table_name} {wc} limit {limit}"
+        else:
+            sql = f"select * from {db_schema}.{table_name} {wc} limit {limit}"
+        
+        # Add offset
+        if offset:
+            sql += f" offset {offset}"
 
-        sql = "select * from " + db_schema + "." + table_name + " " + wc
-        res = cur.execute(sql, args=args)
-        res = cur.fetchall()
-
-        conn.close()
+        # Run the query
+        res = RDBService._run_sql(sql, args, fetch=True)
 
         return res
 
     @classmethod
-    def create(cls, db_schema, table_name, create_data):
-
+    def _post_insert_clause_args(cls, template):
+        
         cols = []
-        vals = []
         args = []
+        clause = None
 
-        for k,v in create_data.items():
-            cols.append(k)
-            vals.append('%s')
-            args.append(v)
+        if template is None or template == {}:
+            clause = ""
+            args = None
+        else:
+            for k,v in template.items():
+                # cols.append("`"+k+"`")
+                cols.append(k)
+                args.append(v)
 
-        cols_clause = "(" + ",".join(cols) + ")"
-        vals_clause = "values (" + ",".join(vals) + ")"
+            col_formatted = " (" + ", ".join(cols) + ") "
+            val_formatted = " (" + ", ".join(["%s"]*len(cols)) + ") "
+            clause = "{}values{}".format(col_formatted, val_formatted)
 
-        sql_stmt = "insert into " + db_schema + "." + table_name + " " + cols_clause + \
-            " " + vals_clause
+        return clause, args
 
-        res = RDBService._run_sql(sql_stmt, args)
+    @classmethod
+    def create_resource(cls, db_schema, table_name, create_data):
+        
+        # generate SQL query
+        insert_clause, args = RDBService._post_insert_clause_args(create_data)
+        sql = f"insert into {db_schema}.{table_name} {insert_clause}"
+
+        # Run the query
+        res = RDBService._run_sql(sql, args)
+        
+        return res
+    
+    @classmethod
+    def _get_update_clause_args(cls, template):
+
+        terms = []
+        args = []
+        clause = None
+
+        if template is None or template == {}:
+            clause = ""
+            args = None
+        else:
+            for k,v in template.items():
+                terms.append(k + "=%s")
+                args.append(v)
+
+            clause = " set " +  ", ".join(terms)
+
+
+        return clause, args
+    
+    @classmethod
+    def update_resource(cls, db_schema, table_name, update_data, where_clause):
+        
+        # get where clause
+        wc, wc_args = RDBService._get_where_clause_args(where_clause)
+        
+        # Get the update data clause
+        uc, uc_args = RDBService._get_update_clause_args(update_data)
+        
+        # Generate query
+        sql = f"update {db_schema}.{table_name} {uc} {wc}"
+        
+        # combine args
+        args = uc_args + wc_args
+        
+        # Run the query
+        res = RDBService._run_sql(sql, args)
+
+        return res
+    
+    @classmethod
+    def delete_resource(cls, db_schema, table_name, delete_data):
+        
+        # Get the where clause
+        wc, args = RDBService._get_where_clause_args(delete_data)
+        sql = f"delete from {db_schema}.{table_name} {wc}"
+        
+        # Run the query
+        res = RDBService._run_sql(sql, args)
+
         return res

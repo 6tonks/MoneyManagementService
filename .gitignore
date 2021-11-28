@@ -1,5 +1,6 @@
 # Add specific to this project
 .DS_Store
+db_config.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
