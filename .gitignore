@@ -1,6 +1,7 @@
 # Add specific to this project
 .DS_Store
 db_config.py
+nohup.out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

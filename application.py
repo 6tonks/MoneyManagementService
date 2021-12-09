@@ -131,6 +131,8 @@ def specific_money_collection(user_id):
 
             # add or reduce money
             update_data = inputs.data
+            # AWS Step Function can only send string request
+            update_data["money_amount"] = float(update_data["money_amount"])
 
             res_msg, status_code = MoneyManagementResource.update_money_account(wc, update_data)
             
@@ -162,4 +164,4 @@ def specific_money_collection(user_id):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=False)
